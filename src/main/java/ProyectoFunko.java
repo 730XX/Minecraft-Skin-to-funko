@@ -37,7 +37,7 @@ public class ProyectoFunko extends JFrame {
     }
 
     private void initUI() {
-        setTitle("Minecraft Skin to Funko Pop");
+        setTitle("Minecraft Skin");
         setSize(800, 1000);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -318,19 +318,19 @@ public class ProyectoFunko extends JFrame {
         g.drawImage(escalarBrazoizquierdoHombro, 459, 57, null);
 
         //=========Sección brazo Derecho=========//
-         //brazo derecho (lado delantero)       
+        //brazo derecho (lado delantero)       
         BufferedImage brazoDerechoAdelante = getSection(1320, 337, 120, 204);
         BufferedImage escalarBrazoDerechoAdelante
                 = scaleImage(brazoDerechoAdelante, 33, 64);
         g.drawImage(escalarBrazoDerechoAdelante, 148, 85, null);
 
-          //brazo derecho (lado derecho)       
+        //brazo derecho (lado derecho)       
         BufferedImage brazoDerechoDerecha = getSection(1440, 337, 120, 204);
         BufferedImage escalarBrazoDerechoDerecha
                 = scaleImage(brazoDerechoDerecha, 33, 64);
         g.drawImage(escalarBrazoDerechoDerecha, 49, 85, null);
 
-         //brazo derecho (lado trasero)         
+        //brazo derecho (lado trasero)         
         BufferedImage brazoDerechoAtras = getSection(1560, 337, 120, 204);
         BufferedImage escalarBrazoDerechoAtras
                 = scaleImage(brazoDerechoAtras, 33, 64);
@@ -355,8 +355,57 @@ public class ProyectoFunko extends JFrame {
                 = scaleImage(brazoDerechoHombro, 33, 33);
         g.drawImage(escalarBrazoDerechoHombro, 148, 149, null);
 
+        //=========Sección piernas=========//
+        //pierna izquierda (lado delantero 1) done      
+        BufferedImage piernaIzquierdaAdelante = getSection(600, 876, 120, 204);
+        BufferedImage escalarPiernaIzquierdaAdelante
+                = scaleImage(piernaIzquierdaAdelante, 33, 70);
+        BufferedImage piernaIzquierdaAdelanteRotada = rotateImage(escalarPiernaIzquierdaAdelante, 90);
+        BufferedImage piernaIzquierdaAdelanteRotadaMirror = mirrorImage(piernaIzquierdaAdelanteRotada);
+        g.drawImage(piernaIzquierdaAdelanteRotadaMirror, 85, 423, null);
+
+        //pierna izquierda (lado derecho 2 Ancho) done   
+        BufferedImage piernaIzquierdaDerecha = getSection(720, 876, 120, 204);
+        BufferedImage escalarPiernaIzquierdaDerecha
+                = scaleImage(piernaIzquierdaDerecha, 57, 70);
+        BufferedImage piernaIzquierdaDerechaRotada = rotateImage(escalarPiernaIzquierdaDerecha, 90);
+        BufferedImage piernaIzquierdaDerechaRotadaMirror = mirrorImage(piernaIzquierdaDerechaRotada);
+        g.drawImage(piernaIzquierdaDerechaRotadaMirror, 85, 455, null);
+
+        //pierna izquierda (lado trasero 3) done         
+        BufferedImage piernaIzquierdaAtras = getSection(840, 876, 120, 204);
+        BufferedImage escalarPiernaIzquierdaAtras
+                = scaleImage(piernaIzquierdaAtras, 33, 70);
+        BufferedImage piernaIzquierdaAtrasRotada = rotateImage(escalarPiernaIzquierdaAtras, 90);
+        BufferedImage piernaIzquierdaAtrasRotadaMirror = mirrorImage(piernaIzquierdaAtrasRotada);
+        g.drawImage(piernaIzquierdaAtrasRotadaMirror, 85, 510, null);
+
+        //pierna izquierda (lado izquierdo 4 Ancho ) done       
+        BufferedImage piernaIzquierdaIzquierda = getSection(480, 876, 120, 204);
+        BufferedImage escalarPiernaIzquierdaIzquierda
+                = scaleImage(piernaIzquierdaIzquierda, 60, 70);
+        BufferedImage piernaIzquierdaIzquierdaRotada = rotateImage(escalarPiernaIzquierdaIzquierda, 90);
+        BufferedImage piernaIzquierdaIzquierdaRotadaMirror = mirrorImage(piernaIzquierdaIzquierdaRotada);
+        g.drawImage(piernaIzquierdaIzquierdaRotadaMirror, 86, 543, null);
+
+        //pierna izquierda (pie)    
+        BufferedImage piernaIzquierdaPie = getSection(720, 810, 120, 68);
+        BufferedImage escalarPiernaIzquierdaPie
+                = scaleImage(piernaIzquierdaPie, 32, 59);
+        BufferedImage piernaIzquierdaPieEspejo = mirrorImage(escalarPiernaIzquierdaPie);
+        g.drawImage(piernaIzquierdaPieEspejo, 150, 544, null);
+
+        //pierna izquierda (muslo)    
+        BufferedImage piernaIzquierdaMuslo = getSection(600, 810, 120, 68);
+        BufferedImage escalarPiernaIzquierdaMuslo
+                = scaleImage(piernaIzquierdaMuslo, 32, 59);
+        BufferedImage escalarPiernaIzquierdaMusloMirror = mirrorImage(escalarPiernaIzquierdaMuslo);
+
+        g.drawImage(escalarPiernaIzquierdaMusloMirror, 55, 544, null);
+
         g.dispose();
-        // Mostrar la imagen final en la interfaz
+
+        // Muestra la imagen modificada
         ImageIcon finalIcon = new ImageIcon(finalImage);
         imageLabel.setIcon(finalIcon);
         imageLabel.setText(""); // Remove any text
@@ -366,6 +415,7 @@ public class ProyectoFunko extends JFrame {
         if (x + width <= skinImage.getWidth() && y + height <= skinImage.getHeight()) {
             return skinImage.getSubimage(x, y, width, height);
         } else {
+            System.out.println("Intentando recorte: (" + x + "," + y + "," + width + "," + height + ")");
             System.err.println("Recorte fuera de rango: (" + x + "," + y + "," + width + "," + height + ")");
             return null;
         }
@@ -380,12 +430,37 @@ public class ProyectoFunko extends JFrame {
     }
 
     public static BufferedImage mirrorImage(BufferedImage image) {
-        // Escala negativa en X
+        // Escala negativa en X (Espejo)
         AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
-        // Traslada para mantener la imagen visible
         tx.translate(-image.getWidth(), 0);
         AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
         return op.filter(image, null);
+    }
+
+    public static BufferedImage rotateImage(BufferedImage image, double angle) {
+        int w = image.getWidth();
+        int h = image.getHeight();
+        double rads = Math.toRadians(angle);
+        double sin = Math.abs(Math.sin(rads)), cos = Math.abs(Math.cos(rads));
+
+        int newWidth = (int) Math.floor(w * cos + h * sin);
+        int newHeight = (int) Math.floor(h * cos + w * sin);
+
+        BufferedImage rotatedImage = new BufferedImage(newWidth, newHeight, image.getType());
+        Graphics2D g2d = rotatedImage.createGraphics();
+
+        // Ajustar la transformación al centro del nuevo lienzo
+        AffineTransform transform = new AffineTransform();
+        transform.translate((newWidth - w) / 2, (newHeight - h) / 2);
+        transform.translate(w / 2, h / 2);
+        transform.rotate(rads);
+        transform.translate(-w / 2, -h / 2);
+
+        g2d.setTransform(transform);
+        g2d.drawImage(image, 0, 0, null);
+        g2d.dispose();
+
+        return rotatedImage;
     }
 
     public static void main(String[] args) {
