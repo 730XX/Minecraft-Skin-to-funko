@@ -18,5 +18,23 @@
             <version>2.0.27</version>
         </dependency>
     </dependencies>
+    
+    <build>
+        <plugins>
+            <!-- Plugin para generar Javadoc -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.4.1</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                    <source>17</source>
+                    <doclint>none</doclint> <!-- Evita errores por métodos sin comentarios -->
+                    <failOnError>false</failOnError>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
         
 </project>

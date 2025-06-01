@@ -14,7 +14,25 @@ import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
-
+/**
+ * ProyectoFunko es una aplicación Java con interfaz gráfica (GUI) que permite convertir
+ * una skin de Minecraft en una figura estilo Funko Pop.
+ * 
+ * <p>El usuario puede:
+ * <ul>
+ *   <li>Cargar una imagen de skin en formato PNG (64x64 píxeles estándar de Minecraft).</li>
+ *   <li>Visualizar en tiempo real cómo se ve la skin montada en una plantilla de Funko.</li>
+ *   <li>Guardar la imagen generada como archivo PNG o exportarla en formato PDF.</li>
+ *   <li>Refrescar manualmente la vista presionando la tecla F5.</li>
+ * </ul>
+ * 
+ * <p>Utiliza la librería PDFBox para la exportación en PDF y `BufferedImage` para la manipulación de imágenes.
+ *
+ * <p>El diseño está enfocado en mantener el estilo pixel-art original mediante técnicas como escalado con "nearest neighbor"
+ * y reflejo horizontal para reutilizar partes de la skin.
+ *
+ * @author Leo
+ */
 public class ProyectoFunko extends JFrame {
 
     private ImageIcon icon = new ImageIcon(
@@ -35,9 +53,14 @@ public class ProyectoFunko extends JFrame {
         }
         SwingUtilities.invokeLater(this::initUI);
     }
+    
+    
 
+    /**
+     * Inicializa la interfaz gráfica del usuario, incluyendo botones, eventos de teclado y carga la plantilla del Funko y la skin predeterminada.
+     **/
     private void initUI() {
-        setTitle("Minecraft Skin");
+        setTitle("Minecraft Skin To funko popasdasda");
         setSize(800, 1000);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -71,6 +94,7 @@ public class ProyectoFunko extends JFrame {
 
         setVisible(true);
 
+      
         // KeyListener para forzar la actualización
         addKeyListener(new KeyListener() {
             @Override
@@ -90,10 +114,12 @@ public class ProyectoFunko extends JFrame {
             }
         });
 
-        setFocusable(true); // Asegura que el JFrame pueda recibir eventos de teclado
+        setFocusable(true); //
     }
 
-    // Skin predeterminada para ahorrar tiempo
+    /**
+     * Carga una skin predeterminada desde una ruta fija y genera la imagen Funko. Se utiliza para facilitar pruebas rápidas sin selección manual.
+     **/
     private void loadDefaultSkin() {
         try {
             skinImage = ImageIO.read(new File("C:\\Users\\leo\\Desktop\\leo\\l30997\\testInput\\true\\scala.png"));
@@ -103,25 +129,40 @@ public class ProyectoFunko extends JFrame {
         }
     }
 
+    /**
+     * Abre un diálogo para que el usuario seleccione una imagen PNG de skin de Minecraft, valida su tamaño, la escala si es necesario y la procesa como Funko.
+     **/
     private void loadSkin() {
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("PNG Image", "png"));
-        fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("JPG Image", "jpg"));
+        fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Imágenes (*.png, *.jpg)", "png", "jpg"));
+
         int returnValue = fileChooser.showOpenDialog(null);
         if (returnValue == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
             try {
-                skinImage = ImageIO.read(selectedFile);
-                if (skinImage.getWidth() != 1920) {
-                    JOptionPane.showMessageDialog(null, "Imagen incompatiblle");
+                BufferedImage original = ImageIO.read(selectedFile);
+
+                // Si la imagen es menor que 1920x1080, escalar con Nearest Neighbor
+                if (original.getWidth() < 1920 || original.getHeight() < 1080) {
+                    skinImage = scaleImageNearestNeighbor(original, 1920, 1080);
+                } else if (original.getWidth() == 1920 && original.getHeight() == 1080) {
+                    skinImage = original;
+                } else {
+                    JOptionPane.showMessageDialog(null, "Imagen incompatible. Debe ser 1920x1080 o menor.");
+                    return; // No continuar si es inválida
                 }
+
                 processSkin();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
-
+    
+    /**
+    * Guarda la imagen generada del Funko como archivo PNG o PDF,
+    * utilizando PDFBox para exportar en formato PDF con tamaño personalizado.
+    **/
     private void saveFunkoPopImage() {
         if (finalImage != null) {
             JFileChooser fileChooser = new JFileChooser();
@@ -183,9 +224,34 @@ public class ProyectoFunko extends JFrame {
         } else {
             JOptionPane.showMessageDialog(this, "No hay imagen para guardar.");
         }
-
     }
 
+    /**
+    * Escala una imagen utilizando el algoritmo de interpolación "nearest neighbor",
+    * que conserva los píxeles originales, ideal para mantener el estilo pixel-art.
+    *
+    * @param original imagen original a escalar.
+    * @param newWidth ancho nuevo.
+    * @param newHeight alto nuevo.
+    * @return imagen escalada.
+    **/
+    public static BufferedImage scaleImageNearestNeighbor(BufferedImage original, int newWidth, int newHeight) {
+        BufferedImage scaledImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = scaledImage.createGraphics();
+
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        g2d.drawImage(original, 0, 0, newWidth, newHeight, null);
+        g2d.dispose();
+
+        return scaledImage;
+    }
+    
+    
+    /**
+    * Procesa la skin cargada y genera una imagen final combinando partes recortadas
+    * de la skin con la plantilla del Funko.
+    * Esta imagen es mostrada en pantalla y puede ser exportada.
+    **/
     public void processSkin() {
 
         //angulos para rotar imagenes
@@ -253,7 +319,7 @@ public class ProyectoFunko extends JFrame {
         transformCA.rotate(anguloM180, escalarCAb.getWidth() / 2, escalarCAb.getHeight() / 2);
         AffineTransformOp op1 = new AffineTransformOp(transformCA, AffineTransformOp.TYPE_BILINEAR);
         BufferedImage rotatedCab = op1.filter(escalarCAb, null);
-        g.drawImage(rotatedCab, 215, 539, null);
+        g.drawImage(rotatedCab, 215, 537, null);
 
         //pecho lado delantero       
         BufferedImage pecholD = getSection(480, 337, 360, 266);
@@ -354,36 +420,39 @@ public class ProyectoFunko extends JFrame {
         BufferedImage escalarBrazoDerechoHombro
                 = scaleImage(brazoDerechoHombro, 33, 33);
         g.drawImage(escalarBrazoDerechoHombro, 148, 149, null);
+        
+        
+        
 
         //=========Sección piernas=========//
         //pierna izquierda (lado delantero 1) done      
         BufferedImage piernaIzquierdaAdelante = getSection(600, 876, 120, 204);
         BufferedImage escalarPiernaIzquierdaAdelante
-                = scaleImage(piernaIzquierdaAdelante, 33, 70);
+                = scaleImage(piernaIzquierdaAdelante, 33, 65);
         BufferedImage piernaIzquierdaAdelanteRotada = rotateImage(escalarPiernaIzquierdaAdelante, 90);
         BufferedImage piernaIzquierdaAdelanteRotadaMirror = mirrorImage(piernaIzquierdaAdelanteRotada);
-        g.drawImage(piernaIzquierdaAdelanteRotadaMirror, 85, 423, null);
+        g.drawImage(piernaIzquierdaAdelanteRotadaMirror, 86, 423, null);
 
         //pierna izquierda (lado derecho 2 Ancho) done   
         BufferedImage piernaIzquierdaDerecha = getSection(720, 876, 120, 204);
         BufferedImage escalarPiernaIzquierdaDerecha
-                = scaleImage(piernaIzquierdaDerecha, 57, 70);
+                = scaleImage(piernaIzquierdaDerecha, 57, 65);
         BufferedImage piernaIzquierdaDerechaRotada = rotateImage(escalarPiernaIzquierdaDerecha, 90);
         BufferedImage piernaIzquierdaDerechaRotadaMirror = mirrorImage(piernaIzquierdaDerechaRotada);
-        g.drawImage(piernaIzquierdaDerechaRotadaMirror, 85, 455, null);
+        g.drawImage(piernaIzquierdaDerechaRotadaMirror, 86, 455, null);
 
         //pierna izquierda (lado trasero 3) done         
         BufferedImage piernaIzquierdaAtras = getSection(840, 876, 120, 204);
         BufferedImage escalarPiernaIzquierdaAtras
-                = scaleImage(piernaIzquierdaAtras, 33, 70);
+                = scaleImage(piernaIzquierdaAtras, 33, 65);
         BufferedImage piernaIzquierdaAtrasRotada = rotateImage(escalarPiernaIzquierdaAtras, 90);
         BufferedImage piernaIzquierdaAtrasRotadaMirror = mirrorImage(piernaIzquierdaAtrasRotada);
-        g.drawImage(piernaIzquierdaAtrasRotadaMirror, 85, 510, null);
+        g.drawImage(piernaIzquierdaAtrasRotadaMirror, 86, 510, null);
 
         //pierna izquierda (lado izquierdo 4 Ancho ) done       
         BufferedImage piernaIzquierdaIzquierda = getSection(480, 876, 120, 204);
         BufferedImage escalarPiernaIzquierdaIzquierda
-                = scaleImage(piernaIzquierdaIzquierda, 60, 70);
+                = scaleImage(piernaIzquierdaIzquierda, 60, 65);
         BufferedImage piernaIzquierdaIzquierdaRotada = rotateImage(escalarPiernaIzquierdaIzquierda, 90);
         BufferedImage piernaIzquierdaIzquierdaRotadaMirror = mirrorImage(piernaIzquierdaIzquierdaRotada);
         g.drawImage(piernaIzquierdaIzquierdaRotadaMirror, 86, 543, null);
@@ -402,15 +471,69 @@ public class ProyectoFunko extends JFrame {
         BufferedImage escalarPiernaIzquierdaMusloMirror = mirrorImage(escalarPiernaIzquierdaMuslo);
 
         g.drawImage(escalarPiernaIzquierdaMusloMirror, 55, 544, null);
+        
+        
+        
+
+        //=========Sección pierna derecha=========//
+        // pierna derecha (lado delantero 1)
+        BufferedImage piernaDerechaAdelante = getSection(120, 337, 120, 204);
+        BufferedImage escalarPiernaDerechaAdelante = scaleImage(piernaDerechaAdelante, 33, 65);
+        BufferedImage piernaDerechaAdelanteRotada = rotateImage(escalarPiernaDerechaAdelante, 90);
+        //BufferedImage piernaDerechaAdelanteRotadaMirror = mirrorImage(piernaDerechaAdelanteRotada);
+        g.drawImage(piernaDerechaAdelanteRotada, 86, 785, null);
+
+        // pierna derecha (lado izquierdo 2 Ancho) Ahora acomodando
+        BufferedImage piernaDerechaIzquierda = getSection(0, 337, 120, 204);
+        BufferedImage escalarPiernaDerechaIzquierda = scaleImage(piernaDerechaIzquierda, 59, 65);
+        BufferedImage piernaDerechaIzquierdaRotada = rotateImage(escalarPiernaDerechaIzquierda, 90);
+        //BufferedImage piernaDerechaIzquierdaRotadaMirror = mirrorImage(piernaDerechaIzquierdaRotada);
+        g.drawImage(piernaDerechaIzquierdaRotada, 86,726, null);
+
+        // pierna derecha (lado trasero 3) ahora
+        BufferedImage piernaDerechaAtras = getSection(360, 337, 120, 204);
+        BufferedImage escalarPiernaDerechaAtras = scaleImage(piernaDerechaAtras, 33, 65);
+        BufferedImage piernaDerechaAtrasRotada = rotateImage(escalarPiernaDerechaAtras, 90);
+        //BufferedImage piernaDerechaAtrasRotadaMirror = mirrorImage(piernaDerechaAtrasRotada);
+        g.drawImage(piernaDerechaAtrasRotada, 86, 694, null);
+
+        // pierna derecha (lado derecho 4 Ancho) Ahora
+        BufferedImage piernaDerechaDerecha = getSection(240, 337, 120, 204);
+        BufferedImage escalarPiernaDerechaDerecha = scaleImage(piernaDerechaDerecha, 60, 65);
+        BufferedImage piernaDerechaDerechaRotada = rotateImage(escalarPiernaDerechaDerecha, -90);
+        BufferedImage piernaDerechaDerechaRotadaMirror = mirrorImage(piernaDerechaDerechaRotada);
+        g.drawImage(piernaDerechaDerechaRotadaMirror, 85, 635, null);
+
+        // pierna derecha (pie)
+        BufferedImage piernaDerechaPie = getSection(240, 270, 120, 68);
+        BufferedImage escalarPiernaDerechaPie = scaleImage(piernaDerechaPie, 32, 59);
+        BufferedImage escalarPiernaDerechaPieRotada = rotateImage(escalarPiernaDerechaPie, 180);
+        //BufferedImage piernaDerechaPieEspejo = mirrorImage(escalarPiernaDerechaPie);
+        g.drawImage(escalarPiernaDerechaPieRotada, 55, 727, null);
+
+        // pierna derecha (muslo)
+        BufferedImage piernaDerechaMuslo = getSection(120, 270, 120, 68);
+        BufferedImage escalarPiernaDerechaMuslo = scaleImage(piernaDerechaMuslo, 32, 59);
+        BufferedImage escalarPiernaDerechaMusloRotada = rotateImage( escalarPiernaDerechaMuslo , -180);
+        //BufferedImage escalarPiernaDerechaMusloMirror = mirrorImage(escalarPiernaDerechaMusloRotada);
+        g.drawImage(escalarPiernaDerechaMusloRotada, 150, 727, null);
 
         g.dispose();
-
         // Muestra la imagen modificada
         ImageIcon finalIcon = new ImageIcon(finalImage);
         imageLabel.setIcon(finalIcon);
         imageLabel.setText(""); // Remove any text
     }
 
+    /**
+    * Extrae una sección rectangular específica de la skin cargada.
+    * 
+    * @param x coordenada X de inicio del recorte.
+    * @param y coordenada Y de inicio del recorte.
+    * @param width ancho del área a recortar.
+    * @param height alto del área a recortar.
+    * @return imagen recortada o null si está fuera de los límites.
+    **/
     private BufferedImage getSection(int x, int y, int width, int height) {
         if (x + width <= skinImage.getWidth() && y + height <= skinImage.getHeight()) {
             return skinImage.getSubimage(x, y, width, height);
@@ -420,7 +543,15 @@ public class ProyectoFunko extends JFrame {
             return null;
         }
     }
-
+    
+    /**
+    * Escala una imagen a un tamaño específico utilizando interpolación estándar.
+    * 
+    * @param src imagen fuente.
+    * @param width ancho deseado.
+    * @param height alto deseado.
+    * @return imagen escalada.
+    **/
     private BufferedImage scaleImage(BufferedImage src, int width, int height) {
         BufferedImage scaledImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = scaledImage.createGraphics();
@@ -428,7 +559,13 @@ public class ProyectoFunko extends JFrame {
         g2d.dispose();
         return scaledImage;
     }
-
+    
+    /**
+    * Refleja horizontalmente una imagen, creando un efecto espejo.
+    * 
+    * @param image imagen original.
+    * @return imagen reflejada horizontalmente.
+    **/
     public static BufferedImage mirrorImage(BufferedImage image) {
         // Escala negativa en X (Espejo)
         AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
@@ -436,7 +573,15 @@ public class ProyectoFunko extends JFrame {
         AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
         return op.filter(image, null);
     }
-
+    
+    
+    /**
+    * Rota una imagen alrededor de su centro por un ángulo especificado.
+    *
+    * @param image imagen original a rotar.
+    * @param angle ángulo en grados.
+    * @return imagen rotada.
+    **/
     public static BufferedImage rotateImage(BufferedImage image, double angle) {
         int w = image.getWidth();
         int h = image.getHeight();
