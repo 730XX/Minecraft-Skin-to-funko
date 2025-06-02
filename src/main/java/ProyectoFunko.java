@@ -1,10 +1,14 @@
 
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.geom.AffineTransform;
@@ -14,79 +18,155 @@ import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+
 /**
- * ProyectoFunko es una aplicación Java con interfaz gráfica (GUI) que permite convertir
- * una skin de Minecraft en una figura estilo Funko Pop.
- * 
- * <p>El usuario puede:
- * <ul>
- *   <li>Cargar una imagen de skin en formato PNG (64x64 píxeles estándar de Minecraft).</li>
- *   <li>Visualizar en tiempo real cómo se ve la skin montada en una plantilla de Funko.</li>
- *   <li>Guardar la imagen generada como archivo PNG o exportarla en formato PDF.</li>
- *   <li>Refrescar manualmente la vista presionando la tecla F5.</li>
- * </ul>
- * 
- * <p>Utiliza la librería PDFBox para la exportación en PDF y `BufferedImage` para la manipulación de imágenes.
+ * ProyectoFunko es una aplicación Java con interfaz gráfica (GUI) que permite convertir una skin de Minecraft en una figura estilo Funko Pop.
  *
- * <p>El diseño está enfocado en mantener el estilo pixel-art original mediante técnicas como escalado con "nearest neighbor"
- * y reflejo horizontal para reutilizar partes de la skin.
+ * <p>
+ * El usuario puede:
+ * <ul>
+ * <li>Cargar una imagen de skin en formato PNG (64x64 píxeles estándar de Minecraft).</li>
+ * <li>Visualizar en tiempo real cómo se ve la skin montada en una plantilla de Funko.</li>
+ * <li>Guardar la imagen generada como archivo PNG o exportarla en formato PDF.</li>
+ * <li>Refrescar manualmente la vista presionando la tecla F5.</li>
+ * </ul>
+ *
+ * <p>
+ * Utiliza la librería PDFBox para la exportación en PDF y `BufferedImage` para la manipulación de imágenes.
+ *
+ * <p>
+ * El diseño está enfocado en mantener el estilo pixel-art original mediante técnicas como escalado con "nearest neighbor" y reflejo horizontal para reutilizar partes de la skin.
  *
  * @author Leo
  */
 public class ProyectoFunko extends JFrame {
 
-    private ImageIcon icon = new ImageIcon(
-            "C:\\Users\\leo\\Documents\\intellProyects\\MinecrfatSkinFunko\\src\\images\\mitico.png");
+    //private ImageIcon icon = new ImageIcon(
+      //      "svg/xtreme.svg");
+    
+    FlatSVGIcon inconSVG = new FlatSVGIcon("svg/tail.svg");
     private BufferedImage skinImage;
     private BufferedImage funkoTemplate;
     private JLabel imageLabel;
     private BufferedImage finalImage;
 
     public ProyectoFunko() {
-        // Quita la interfaz de mierda de java
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        initUI();
 
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-                | UnsupportedLookAndFeelException e) {
-            e.getMessage();
-        }
-        SwingUtilities.invokeLater(this::initUI);
+        // Quita la interfaz de mierda de java
+//        try {
+//            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+//
+//        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+//                | UnsupportedLookAndFeelException e) {
+//            e.getMessage();
+//        }
+//        SwingUtilities.invokeLater(this::initUI);
     }
-    
-    
 
     /**
      * Inicializa la interfaz gráfica del usuario, incluyendo botones, eventos de teclado y carga la plantilla del Funko y la skin predeterminada.
-     **/
+     */
     private void initUI() {
-        setTitle("Minecraft Skin To funko popasdasda");
-        setSize(800, 1000);
+        setTitle("Minecraft Skin To Funko Pop");
+        setSize(1000, 1000);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        setBackground(Color.DARK_GRAY);
         setResizable(false);
-        getContentPane().setBackground((new Color(19, 23, 24)));
-        setIconImage(icon.getImage());
+        setIconImage(inconSVG.getImage());
+        Font fontGrande = new Font("Segoe UI", Font.PLAIN, 18); // o la fuente que prefieras
+        getContentPane().setBackground(new Color(19, 23, 24));
+        setLayout(new BorderLayout());
 
-        JPanel panel = new JPanel();
-        JButton loadButton = new JButton("Cargar Skin");
-        loadButton.addActionListener(e -> loadSkin());
+        // Panel izquierdo directo
+        JPanel controlPanel = new JPanel();
+        controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.Y_AXIS));
+        controlPanel.setBackground(new Color(19, 23, 24));
+        controlPanel.setBorder(BorderFactory.createEmptyBorder(40, 20, 10, 10)); // margen interno
+        JLabel labelJugador = new JLabel("               Cargar Skin:    ");
+        labelJugador.setForeground(Color.WHITE);
+        labelJugador.setAlignmentX(Component.LEFT_ALIGNMENT);
+        controlPanel.add(labelJugador);
+
+        JTextField nombreJugadorField = new JTextField(15);
+        nombreJugadorField.setMaximumSize(new Dimension(300, 30));
+        nombreJugadorField.setAlignmentX(Component.LEFT_ALIGNMENT);
+        nombreJugadorField.putClientProperty("JTextField.placeholderText", "Ingresa el nombre...");
+        controlPanel.add(nombreJugadorField);
+        controlPanel.add(Box.createRigidArea(new Dimension(0, 11)));
+
+        JButton btnDesdeNombre = new JButton("Desde jugador");
+        btnDesdeNombre.setMaximumSize(new Dimension(300, 40));
+        btnDesdeNombre.setAlignmentX(Component.LEFT_ALIGNMENT);
+        btnDesdeNombre.addActionListener(e -> {
+            String nombreJugador = nombreJugadorField.getText().trim();
+            if (!nombreJugador.isEmpty()) {
+                try {
+                    BufferedImage original = SkinFetch.obtenerSkin(nombreJugador);
+                    if (original.getWidth() < 1920 || original.getHeight() < 1080) {
+                        skinImage = scaleImageNearestNeighbor(original, 1920, 1080);
+                    } else if (original.getWidth() == 1920 && original.getHeight() == 1080) {
+                        skinImage = original;
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Imagen incompatible. Debe ser 1920x1080 o menor.");
+                        return;
+                    }
+                    processSkin();
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(this, "Error al cargar la skin (Verifica si el nombre esta correcto): " + ex.getMessage());
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Por favor ingresa un nombre de jugador.");
+            }
+        });
+        
+        labelJugador.setFont(fontGrande);
+        nombreJugadorField.setFont(fontGrande);
+        btnDesdeNombre.setFont(fontGrande);
+        
+        controlPanel.add(btnDesdeNombre);
+        controlPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+
+        JButton btnDesdeArchivo = new JButton("Desde archivo");
+        btnDesdeArchivo.setMaximumSize(new Dimension(300, 40));
+        btnDesdeArchivo.setAlignmentX(Component.LEFT_ALIGNMENT);
+        btnDesdeArchivo.addActionListener(e -> loadSkin());
+        controlPanel.add(btnDesdeArchivo);
+        controlPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
         JButton saveButton = new JButton("Guardar Funko Pop");
+        saveButton.setMaximumSize(new Dimension(300, 40));
+        saveButton.setAlignmentX(Component.LEFT_ALIGNMENT);
+        saveButton.setBackground(new Color(33, 150, 243));
+        saveButton.setForeground(Color.WHITE);
+        saveButton.setFocusPainted(false);
         saveButton.addActionListener(e -> saveFunkoPopImage());
+        controlPanel.add(saveButton);  
+        controlPanel.add(Box.createVerticalGlue());
+        
+        JLabel lblDedicatoria = new JLabel("@730XX, una idea de l30_997");
+        lblDedicatoria.setMaximumSize(new Dimension(300,40));
+        lblDedicatoria.setAlignmentX(Component.LEFT_ALIGNMENT);
+        lblDedicatoria.setBackground(new Color(33, 150, 243));
+        lblDedicatoria.setForeground(Color.WHITE);
+        lblDedicatoria.setFont(fontGrande);
+        controlPanel.add(lblDedicatoria);
 
+        btnDesdeArchivo.setFont(fontGrande);
+        saveButton.setFont(fontGrande);
+        JPanel imagePanel = new JPanel(new BorderLayout());
+        imagePanel.setBackground(new Color(19, 23, 24));
+        imagePanel.setBorder(BorderFactory.createEmptyBorder(40, 0, 0, 0));
         imageLabel = new JLabel();
-        panel.add(loadButton);
-        panel.add(saveButton);
-        panel.add(imageLabel);
+        imageLabel.setHorizontalAlignment(JLabel.CENTER);
+        imagePanel.add(imageLabel, BorderLayout.NORTH);
 
-        add(panel);
+        add(controlPanel, BorderLayout.WEST);
+        add(imagePanel, BorderLayout.CENTER);
 
         try {
-            funkoTemplate = ImageIO
-                    //.read(new File("C:\\Users\\leo\\Documents\\NetBeansProjects\\MinecraftSkinToFunkoPop\\src\\main\\java\\img\\funkoleo.png"));
-                    .read(new File("C:\\Users\\leo\\Desktop\\leo\\l30997\\testInput\\true\\molde groover.png"));
+            funkoTemplate = ImageIO.read(new File("src/main/resources/moldes/molde groover.png"));
+            //funkoTemplate = ImageIO.read(new File("moldes/molde groover.png"));
             loadDefaultSkin();
         } catch (IOException e) {
             e.printStackTrace();
@@ -94,35 +174,28 @@ public class ProyectoFunko extends JFrame {
 
         setVisible(true);
 
-      
-        // KeyListener para forzar la actualización
-        addKeyListener(new KeyListener() {
+        addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_F5) {
-                    System.out.println("He presionado el f5");// Presiona F5 para actualizar
                     processSkin();
+                    initUI();
+                    System.out.println("He presionado f5");
                 }
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-            }
-
-            @Override
-            public void keyTyped(KeyEvent e) {
             }
         });
 
-        setFocusable(true); //
+        setFocusable(true);
     }
 
     /**
      * Carga una skin predeterminada desde una ruta fija y genera la imagen Funko. Se utiliza para facilitar pruebas rápidas sin selección manual.
-     **/
+     *
+     */
     private void loadDefaultSkin() {
         try {
-            skinImage = ImageIO.read(new File("C:\\Users\\leo\\Desktop\\leo\\l30997\\testInput\\true\\scala.png"));
+            //skinImage = ImageIO.read(new File("C:\\Users\\leo\\Desktop\\leo\\l30997\\testInput\\true\\scala.png"));
+            skinImage = ImageIO.read(new File("src/main/resources/moldes/scala.png"));
             processSkin();
         } catch (IOException e) {
             JOptionPane.showMessageDialog(null, "Error al cargar la skin default" + e.getMessage());
@@ -131,7 +204,8 @@ public class ProyectoFunko extends JFrame {
 
     /**
      * Abre un diálogo para que el usuario seleccione una imagen PNG de skin de Minecraft, valida su tamaño, la escala si es necesario y la procesa como Funko.
-     **/
+     *
+     */
     private void loadSkin() {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Imágenes (*.png, *.jpg)", "png", "jpg"));
@@ -151,18 +225,17 @@ public class ProyectoFunko extends JFrame {
                     JOptionPane.showMessageDialog(null, "Imagen incompatible. Debe ser 1920x1080 o menor.");
                     return; // No continuar si es inválida
                 }
-
                 processSkin();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
-    
+
     /**
-    * Guarda la imagen generada del Funko como archivo PNG o PDF,
-    * utilizando PDFBox para exportar en formato PDF con tamaño personalizado.
-    **/
+     * Guarda la imagen generada del Funko como archivo PNG o PDF, utilizando PDFBox para exportar en formato PDF con tamaño personalizado.
+     *
+     */
     private void saveFunkoPopImage() {
         if (finalImage != null) {
             JFileChooser fileChooser = new JFileChooser();
@@ -227,14 +300,14 @@ public class ProyectoFunko extends JFrame {
     }
 
     /**
-    * Escala una imagen utilizando el algoritmo de interpolación "nearest neighbor",
-    * que conserva los píxeles originales, ideal para mantener el estilo pixel-art.
-    *
-    * @param original imagen original a escalar.
-    * @param newWidth ancho nuevo.
-    * @param newHeight alto nuevo.
-    * @return imagen escalada.
-    **/
+     * Escala una imagen utilizando el algoritmo de interpolación "nearest neighbor", que conserva los píxeles originales, ideal para mantener el estilo pixel-art.
+     *
+     * @param original imagen original a escalar.
+     * @param newWidth ancho nuevo.
+     * @param newHeight alto nuevo.
+     * @return imagen escalada.
+     *
+     */
     public static BufferedImage scaleImageNearestNeighbor(BufferedImage original, int newWidth, int newHeight) {
         BufferedImage scaledImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = scaledImage.createGraphics();
@@ -245,15 +318,12 @@ public class ProyectoFunko extends JFrame {
 
         return scaledImage;
     }
-    
-    
-    /**
-    * Procesa la skin cargada y genera una imagen final combinando partes recortadas
-    * de la skin con la plantilla del Funko.
-    * Esta imagen es mostrada en pantalla y puede ser exportada.
-    **/
-    public void processSkin() {
 
+    /**
+     * Procesa la skin cargada y genera una imagen final combinando partes recortadas de la skin con la plantilla del Funko. Esta imagen es mostrada en pantalla y puede ser exportada.
+     *
+     */
+    public void processSkin() {
         //angulos para rotar imagenes
         double angulo180 = Math.toRadians(180);
         double anguloM180 = Math.toRadians(-180);
@@ -420,9 +490,6 @@ public class ProyectoFunko extends JFrame {
         BufferedImage escalarBrazoDerechoHombro
                 = scaleImage(brazoDerechoHombro, 33, 33);
         g.drawImage(escalarBrazoDerechoHombro, 148, 149, null);
-        
-        
-        
 
         //=========Sección piernas=========//
         //pierna izquierda (lado delantero 1) done      
@@ -471,9 +538,6 @@ public class ProyectoFunko extends JFrame {
         BufferedImage escalarPiernaIzquierdaMusloMirror = mirrorImage(escalarPiernaIzquierdaMuslo);
 
         g.drawImage(escalarPiernaIzquierdaMusloMirror, 55, 544, null);
-        
-        
-        
 
         //=========Sección pierna derecha=========//
         // pierna derecha (lado delantero 1)
@@ -488,7 +552,7 @@ public class ProyectoFunko extends JFrame {
         BufferedImage escalarPiernaDerechaIzquierda = scaleImage(piernaDerechaIzquierda, 59, 65);
         BufferedImage piernaDerechaIzquierdaRotada = rotateImage(escalarPiernaDerechaIzquierda, 90);
         //BufferedImage piernaDerechaIzquierdaRotadaMirror = mirrorImage(piernaDerechaIzquierdaRotada);
-        g.drawImage(piernaDerechaIzquierdaRotada, 86,726, null);
+        g.drawImage(piernaDerechaIzquierdaRotada, 86, 726, null);
 
         // pierna derecha (lado trasero 3) ahora
         BufferedImage piernaDerechaAtras = getSection(360, 337, 120, 204);
@@ -514,7 +578,7 @@ public class ProyectoFunko extends JFrame {
         // pierna derecha (muslo)
         BufferedImage piernaDerechaMuslo = getSection(120, 270, 120, 68);
         BufferedImage escalarPiernaDerechaMuslo = scaleImage(piernaDerechaMuslo, 32, 59);
-        BufferedImage escalarPiernaDerechaMusloRotada = rotateImage( escalarPiernaDerechaMuslo , -180);
+        BufferedImage escalarPiernaDerechaMusloRotada = rotateImage(escalarPiernaDerechaMuslo, -180);
         //BufferedImage escalarPiernaDerechaMusloMirror = mirrorImage(escalarPiernaDerechaMusloRotada);
         g.drawImage(escalarPiernaDerechaMusloRotada, 150, 727, null);
 
@@ -526,14 +590,15 @@ public class ProyectoFunko extends JFrame {
     }
 
     /**
-    * Extrae una sección rectangular específica de la skin cargada.
-    * 
-    * @param x coordenada X de inicio del recorte.
-    * @param y coordenada Y de inicio del recorte.
-    * @param width ancho del área a recortar.
-    * @param height alto del área a recortar.
-    * @return imagen recortada o null si está fuera de los límites.
-    **/
+     * Extrae una sección rectangular específica de la skin cargada.
+     *
+     * @param x coordenada X de inicio del recorte.
+     * @param y coordenada Y de inicio del recorte.
+     * @param width ancho del área a recortar.
+     * @param height alto del área a recortar.
+     * @return imagen recortada o null si está fuera de los límites.
+     *
+     */
     private BufferedImage getSection(int x, int y, int width, int height) {
         if (x + width <= skinImage.getWidth() && y + height <= skinImage.getHeight()) {
             return skinImage.getSubimage(x, y, width, height);
@@ -543,15 +608,16 @@ public class ProyectoFunko extends JFrame {
             return null;
         }
     }
-    
+
     /**
-    * Escala una imagen a un tamaño específico utilizando interpolación estándar.
-    * 
-    * @param src imagen fuente.
-    * @param width ancho deseado.
-    * @param height alto deseado.
-    * @return imagen escalada.
-    **/
+     * Escala una imagen a un tamaño específico utilizando interpolación estándar.
+     *
+     * @param src imagen fuente.
+     * @param width ancho deseado.
+     * @param height alto deseado.
+     * @return imagen escalada.
+     *
+     */
     private BufferedImage scaleImage(BufferedImage src, int width, int height) {
         BufferedImage scaledImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = scaledImage.createGraphics();
@@ -559,13 +625,14 @@ public class ProyectoFunko extends JFrame {
         g2d.dispose();
         return scaledImage;
     }
-    
+
     /**
-    * Refleja horizontalmente una imagen, creando un efecto espejo.
-    * 
-    * @param image imagen original.
-    * @return imagen reflejada horizontalmente.
-    **/
+     * Refleja horizontalmente una imagen, creando un efecto espejo.
+     *
+     * @param image imagen original.
+     * @return imagen reflejada horizontalmente.
+     *
+     */
     public static BufferedImage mirrorImage(BufferedImage image) {
         // Escala negativa en X (Espejo)
         AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
@@ -573,15 +640,15 @@ public class ProyectoFunko extends JFrame {
         AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
         return op.filter(image, null);
     }
-    
-    
+
     /**
-    * Rota una imagen alrededor de su centro por un ángulo especificado.
-    *
-    * @param image imagen original a rotar.
-    * @param angle ángulo en grados.
-    * @return imagen rotada.
-    **/
+     * Rota una imagen alrededor de su centro por un ángulo especificado.
+     *
+     * @param image imagen original a rotar.
+     * @param angle ángulo en grados.
+     * @return imagen rotada.
+     *
+     */
     public static BufferedImage rotateImage(BufferedImage image, double angle) {
         int w = image.getWidth();
         int h = image.getHeight();
@@ -611,9 +678,9 @@ public class ProyectoFunko extends JFrame {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             try {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (Exception e) {
-                e.printStackTrace();
+                UIManager.setLookAndFeel(new FlatDarkLaf());
+            } catch (Exception ex) {
+                System.err.println("Failed to initialize LaF");
             }
             new ProyectoFunko();
         });
