@@ -11,4 +11,4 @@ Este proyecto permite a los usuarios cargar una **skin de Minecraft** y converti
 ## 🔧 Instalación
 1. Clona este repositorio:
    ```bash
-   git clone https://github.com/tu-usuario/minecraft-funko-converter.git
+   git clone https://github.com/730XX/Minecraft-Skin-to-funko
