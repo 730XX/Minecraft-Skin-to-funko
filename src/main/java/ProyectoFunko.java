@@ -1,6 +1,6 @@
 
+import Animations.AnimatorUtils;
 import com.formdev.flatlaf.FlatDarkLaf;
-import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -10,14 +10,17 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import javax.imageio.ImageIO;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import raven.toast.Notifications;
 
 /**
  * ProyectoFunko es una aplicación Java con interfaz gráfica (GUI) que permite convertir una skin de Minecraft en una figura estilo Funko Pop.
@@ -42,26 +45,25 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 public class ProyectoFunko extends JFrame {
 
     //private ImageIcon icon = new ImageIcon(
-      //      "svg/xtreme.svg");
-    
+    //      "svg/xtreme.svg");
     FlatSVGIcon inconSVG = new FlatSVGIcon("svg/tail.svg");
     private BufferedImage skinImage;
     private BufferedImage funkoTemplate;
     private JLabel imageLabel;
     private BufferedImage finalImage;
+    private AnimatorUtils animatorUtils;
+
+    private JLabel labelJugador;
+    private JTextField nombreJugadorField;
+    private JButton btnDesdeArchivo;
+    private JButton saveButton;
+    private JButton btnDesdeNombre;
+    private JLabel lblDedicatoria;
+    private static int i = 0;
 
     public ProyectoFunko() {
         initUI();
-
-        // Quita la interfaz de mierda de java
-//        try {
-//            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-//
-//        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-//                | UnsupportedLookAndFeelException e) {
-//            e.getMessage();
-//        }
-//        SwingUtilities.invokeLater(this::initUI);
+        Notifications.getInstance().setJFrame(this);
     }
 
     /**
@@ -69,6 +71,7 @@ public class ProyectoFunko extends JFrame {
      */
     private void initUI() {
         setTitle("Minecraft Skin To Funko Pop");
+
         setSize(1000, 1000);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -83,21 +86,27 @@ public class ProyectoFunko extends JFrame {
         controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.Y_AXIS));
         controlPanel.setBackground(new Color(19, 23, 24));
         controlPanel.setBorder(BorderFactory.createEmptyBorder(40, 20, 10, 10)); // margen interno
-        JLabel labelJugador = new JLabel("               Cargar Skin:    ");
+        labelJugador = new JLabel("               Cargar Skin:    ");
         labelJugador.setForeground(Color.WHITE);
         labelJugador.setAlignmentX(Component.LEFT_ALIGNMENT);
+        //para animacion
+        labelJugador.setVisible(false);
         controlPanel.add(labelJugador);
 
-        JTextField nombreJugadorField = new JTextField(15);
+        nombreJugadorField = new JTextField(15);
         nombreJugadorField.setMaximumSize(new Dimension(300, 30));
         nombreJugadorField.setAlignmentX(Component.LEFT_ALIGNMENT);
         nombreJugadorField.putClientProperty("JTextField.placeholderText", "Ingresa el nombre...");
+        //para animaicion
+        //nombreJugadorField.setVisible(false);
         controlPanel.add(nombreJugadorField);
         controlPanel.add(Box.createRigidArea(new Dimension(0, 11)));
 
-        JButton btnDesdeNombre = new JButton("Desde jugador");
+        btnDesdeNombre = new JButton("Desde jugador");
         btnDesdeNombre.setMaximumSize(new Dimension(300, 40));
         btnDesdeNombre.setAlignmentX(Component.LEFT_ALIGNMENT);
+        //para animacion
+        //btnDesdeNombre.setVisible(false);
         btnDesdeNombre.addActionListener(e -> {
             String nombreJugador = nombreJugadorField.getText().trim();
             if (!nombreJugador.isEmpty()) {
@@ -113,43 +122,52 @@ public class ProyectoFunko extends JFrame {
                     }
                     processSkin();
                 } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(this, "Error al cargar la skin (Verifica si el nombre esta correcto): " + ex.getMessage());
+                    Notifications.getInstance().
+                            show(Notifications.Type.ERROR,
+                                    Notifications.Location.BOTTOM_RIGHT,
+                                    3500, "Error al cargar la skin (Verifica si el nombre esta correcto): ");
                 }
             } else {
                 JOptionPane.showMessageDialog(this, "Por favor ingresa un nombre de jugador.");
             }
         });
-        
+
         labelJugador.setFont(fontGrande);
         nombreJugadorField.setFont(fontGrande);
         btnDesdeNombre.setFont(fontGrande);
-        
+
         controlPanel.add(btnDesdeNombre);
         controlPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        JButton btnDesdeArchivo = new JButton("Desde archivo");
+        btnDesdeArchivo = new JButton("Desde archivo");
         btnDesdeArchivo.setMaximumSize(new Dimension(300, 40));
         btnDesdeArchivo.setAlignmentX(Component.LEFT_ALIGNMENT);
         btnDesdeArchivo.addActionListener(e -> loadSkin());
+        //Para animacion
+        //btnDesdeArchivo.setVisible(false);
         controlPanel.add(btnDesdeArchivo);
         controlPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        JButton saveButton = new JButton("Guardar Funko Pop");
+        saveButton = new JButton("Guardar Funko Pop");
         saveButton.setMaximumSize(new Dimension(300, 40));
         saveButton.setAlignmentX(Component.LEFT_ALIGNMENT);
         saveButton.setBackground(new Color(33, 150, 243));
         saveButton.setForeground(Color.WHITE);
         saveButton.setFocusPainted(false);
+        //Para animacion
+        //saveButton.setVisible(false);
         saveButton.addActionListener(e -> saveFunkoPopImage());
-        controlPanel.add(saveButton);  
+        controlPanel.add(saveButton);
         controlPanel.add(Box.createVerticalGlue());
-        
-        JLabel lblDedicatoria = new JLabel("@730XX, una idea de l30_997");
-        lblDedicatoria.setMaximumSize(new Dimension(300,40));
+
+        lblDedicatoria = new JLabel("@730XX, una idea de l30_997");
+        lblDedicatoria.setMaximumSize(new Dimension(300, 40));
         lblDedicatoria.setAlignmentX(Component.LEFT_ALIGNMENT);
         lblDedicatoria.setBackground(new Color(33, 150, 243));
         lblDedicatoria.setForeground(Color.WHITE);
         lblDedicatoria.setFont(fontGrande);
+        //para animacion
+        //lblDedicatoria.setVisible(false);
         controlPanel.add(lblDedicatoria);
 
         btnDesdeArchivo.setFont(fontGrande);
@@ -174,6 +192,13 @@ public class ProyectoFunko extends JFrame {
 
         setVisible(true);
 
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowOpened(WindowEvent e) {
+                animateComponents();
+            }
+        });
+
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -182,10 +207,28 @@ public class ProyectoFunko extends JFrame {
                     initUI();
                     System.out.println("He presionado f5");
                 }
+                if (e.getKeyCode() == KeyEvent.VK_A) {
+
+                    animateComponents();
+
+                    System.out.println("Animacion : " + i++);
+                }
             }
         });
 
         setFocusable(true);
+        requestFocusInWindow();
+    }
+
+    public void animateComponents() {
+        int delayStep = 0;
+        int duration = 550;
+        AnimatorUtils.animateFadeInFromLeft(nombreJugadorField, new Point(35, 80), duration, delayStep);
+        AnimatorUtils.animateFadeInFromLeft(btnDesdeNombre, new Point(35, 120), duration, delayStep + 40);
+        AnimatorUtils.animateFadeInFromLeft(btnDesdeArchivo, new Point(35, 160), duration, delayStep + 80);
+        AnimatorUtils.animateFadeInFromLeft(saveButton, new Point(35, 200), duration, delayStep + 120);
+        AnimatorUtils.animateFadeInFromLeft(lblDedicatoria, new Point(20, 920), duration, delayStep + 160);
+        AnimatorUtils.animateFadeInFromTop(labelJugador, new Point(40, 40), duration, delayStep + 60);
     }
 
     /**
@@ -288,10 +331,11 @@ public class ProyectoFunko extends JFrame {
                         // Guardar imagen como PNG
                         ImageIO.write(finalImage, extension, fileToSave);
                     }
-                    JOptionPane.showMessageDialog(this, "Imagen guardada con éxito.");
+                    Notifications.getInstance().show(Notifications.Type.SUCCESS, Notifications.Location.BOTTOM_RIGHT, 3500, "Funko Guardado Correctamente");
+                    //JOptionPane.showMessageDialog(this, "Imagen guardada con éxito.");
                 } catch (IOException e) {
                     e.printStackTrace();
-                    JOptionPane.showMessageDialog(this, "Error al guardar la imagen.");
+                    Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.BOTTOM_RIGHT, 3500, "Error al Guardar ");
                 }
             }
         } else {
@@ -678,7 +722,10 @@ public class ProyectoFunko extends JFrame {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             try {
-                UIManager.setLookAndFeel(new FlatDarkLaf());
+                
+                FlatDarkLaf.setup();
+                FlatDarkLaf.registerCustomDefaultsSource("RavenTheme");
+                //UIManager.setLookAndFeel(new FlatDarkLaf());
             } catch (Exception ex) {
                 System.err.println("Failed to initialize LaF");
             }

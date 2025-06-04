@@ -33,6 +33,18 @@
             <artifactId>flatlaf-extras</artifactId>
             <version>3.6</version>
         </dependency>
+        
+        <dependency>
+            <groupId>org.pushing-pixels</groupId>
+            <artifactId>radiance-animation</artifactId>
+            <version>7.5.0</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>raven.toast</groupId>
+            <artifactId>swing-toast-notification</artifactId>
+            <version>1.0.4</version>
+        </dependency>
     </dependencies>
     
     
