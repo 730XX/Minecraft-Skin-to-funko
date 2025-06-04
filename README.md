@@ -12,9 +12,9 @@ Este proyecto permite a los usuarios cargar una **skin de Minecraft** y converti
 
 Actualmente, este programa es **compatible únicamente con skins del formato moderno** introducido a partir de **Minecraft versión 1.8** (como la 1.9 en adelante).
 
-Si cargas una skin proveniente de una versión **anterior a la 1.8**, la conversión puede fallar visualmente y **la imagen resultante saldrá deformada**, ya que la distribución de las texturas (especialmente en cabeza, brazos y piernas) **cambió significativamente** en el nuevo formato.
+Si cargas una skin hecha en versiónes **anteriores a la 1.8**, la conversión puede fallar visualmente y **la imagen resultante saldrá deformada**, ya que la distribución de las texturas (especialmente en cabeza, brazos y piernas) **cambió significativamente** en este nuevo formato.
 
-Se recomienda verificar que la skin esté actualizada al **formato moderno (64x64 píxeles)** antes de usarla con este conversor.
+Te recomiendo verificar que la skin esté actualizada al **formato moderno (64x64 píxeles)** antes de usarla con este conversor.
 
 ## Capturas de pantalla
 ![image](https://github.com/user-attachments/assets/f65cb2ab-5b6a-4c97-aa7b-12dd030932a8)
